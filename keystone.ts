@@ -9,16 +9,12 @@ const DATABASE_URL =
 export default withAuth(
   config({
     db: { provider: "postgresql", url: DATABASE_URL },
-    server: {
-      cors: {
-        origin: process.env.FRONTEND_URL,
-        credentials: true,
-      },
-    },
-    experimental: {
-      generateNextGraphqlAPI: true,
-      generateNodeAPI: true,
-    },
+    // server: {
+    //   cors: {
+    //     origin: process.env.FRONTEND_URL,
+    //     credentials: true,
+    //   },
+    // },
     ui: {
       // TODO: change this for roles
       isAccessAllowed: (context) => !!context.session?.data,
