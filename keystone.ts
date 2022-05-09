@@ -21,6 +21,9 @@ export default withAuth(
       // TODO: change this for roles
       isAccessAllowed: (context) => !!context.session?.data,
     },
+    graphql: {
+      playground: true,
+    },
     session,
     lists,
   })
