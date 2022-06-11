@@ -15,7 +15,10 @@ model User {
   id                      String    @id @default(cuid())
   name                    String    @default("")
   email                   String    @unique @default("")
+  role                    Role[]    @relation("Role_users")
   password                String?
+  groupParticipants       Group[]   @relation("Group_participants")
+  groupLeaders            Group[]   @relation("Group_leaders")
   passwordResetToken      String?
   passwordResetIssuedAt   DateTime?
   passwordResetRedeemedAt DateTime?
@@ -39,4 +42,23 @@ model ProductImage {
   image   Json?
   altText String   @default("")
   product Product? @relation("Product_photo")
+  group   Group?   @relation("Group_image")
+}
+
+model Group {
+  id               String        @id @default(cuid())
+  name             String        @default("")
+  description      String        @default("")
+  price            Int?
+  image            ProductImage? @relation("Group_image", fields: [imageId], references: [id])
+  imageId          String?       @unique @map("image")
+  participants     User[]        @relation("Group_participants")
+  leaders          User[]        @relation("Group_leaders")
+  participantLimit Int?
+}
+
+model Role {
+  id    String @id @default(cuid())
+  name  String @default("")
+  users User[] @relation("Role_users")
 }

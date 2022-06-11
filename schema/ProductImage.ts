@@ -15,6 +15,7 @@ export const ProductImage = list({
     }),
     altText: text(),
     product: relationship({ ref: "Product.photo" }),
+    group: relationship({ ref: "Group.image" }),
   },
   ui: {
     listView: {
