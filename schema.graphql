@@ -216,7 +216,7 @@ type Product {
   id: ID!
   name: String
   description: String
-  photo: ProductImage
+  image: ProductImage
   status: String
   price: Int
 }
@@ -232,7 +232,7 @@ input ProductWhereInput {
   id: IDFilter
   name: StringFilter
   description: StringFilter
-  photo: ProductImageWhereInput
+  image: ProductImageWhereInput
   status: StringNullableFilter
   price: IntNullableFilter
 }
@@ -288,7 +288,7 @@ input ProductOrderByInput {
 input ProductUpdateInput {
   name: String
   description: String
-  photo: ProductImageRelateToOneForUpdateInput
+  image: ProductImageRelateToOneForUpdateInput
   status: String
   price: Int
 }
@@ -307,7 +307,7 @@ input ProductUpdateArgs {
 input ProductCreateInput {
   name: String
   description: String
-  photo: ProductImageRelateToOneForCreateInput
+  image: ProductImageRelateToOneForCreateInput
   status: String
   price: Int
 }

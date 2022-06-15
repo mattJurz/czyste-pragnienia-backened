@@ -6,11 +6,12 @@ export const Product = list({
   fields: {
     name: text({ validation: { isRequired: true } }),
     description: text({ ui: { displayMode: "textarea" } }),
-    photo: relationship({
+    image: relationship({
       ref: "ProductImage.product",
       ui: {
         displayMode: "cards",
         cardFields: ["image", "altText"],
+        inlineConnect: true,
         inlineCreate: { fields: ["image", "altText"] },
         inlineEdit: { fields: ["image", "altText"] },
       },
