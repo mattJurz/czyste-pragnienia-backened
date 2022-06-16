@@ -12,10 +12,10 @@ export default withAuth(
     db: { provider: "postgresql", url: DATABASE_URL },
     server: {
       port: PORT,
-      //   cors: {
-      //     origin: process.env.FRONTEND_URL,
-      //     credentials: true,
-      //   },
+      cors: {
+        origin: process.env.FRONTEND_URL,
+        credentials: true,
+      },
     },
     ui: {
       // TODO: change this for roles

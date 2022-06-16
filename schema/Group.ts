@@ -1,34 +1,36 @@
 import { list } from "@keystone-6/core";
 import { integer, relationship, select, text } from "@keystone-6/core/fields";
 
-export const Product = list({
+export const Group = list({
   // TODO access:
+
   fields: {
     name: text({ validation: { isRequired: true } }),
     description: text({ ui: { displayMode: "textarea" } }),
+    price: integer(),
     image: relationship({
-      ref: "ProductImage.product",
+      ref: "ProductImage.group",
       ui: {
         displayMode: "cards",
         cardFields: ["image", "altText"],
-        inlineConnect: true,
         inlineCreate: { fields: ["image", "altText"] },
         inlineEdit: { fields: ["image", "altText"] },
       },
     }),
-    status: select({
-      options: [
-        { label: "Draft", value: "DRAFT" },
-        { label: "Available", value: "AVAILABLE" },
-        { label: "Unavailable", value: "UNAVAILABLE" },
-      ],
-      defaultValue: "DRAFT",
-      ui: {
-        displayMode: "segmented-control",
-        createView: { fieldMode: "hidden" },
+    participants: relationship({
+      ref: "User.groupParticipants",
+      many: true,
+      hooks: {
+        validate: (data) => {
+          console.log(data);
+        },
       },
     }),
-    price: integer(),
+    leaders: relationship({
+      ref: "User.groupLeaders",
+      many: true,
+    }),
+    participantLimit: integer(),
     // TODOL photo
   },
 });

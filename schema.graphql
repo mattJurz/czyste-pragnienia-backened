@@ -5,7 +5,28 @@ type User {
   id: ID!
   name: String
   email: String
+  role(
+    where: RoleWhereInput! = {}
+    orderBy: [RoleOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Role!]
+  roleCount(where: RoleWhereInput! = {}): Int
   password: PasswordState
+  groupParticipants(
+    where: GroupWhereInput! = {}
+    orderBy: [GroupOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Group!]
+  groupParticipantsCount(where: GroupWhereInput! = {}): Int
+  groupLeaders(
+    where: GroupWhereInput! = {}
+    orderBy: [GroupOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Group!]
+  groupLeadersCount(where: GroupWhereInput! = {}): Int
   passwordResetToken: PasswordState
   passwordResetIssuedAt: DateTime
   passwordResetRedeemedAt: DateTime
@@ -33,7 +54,10 @@ input UserWhereInput {
   id: IDFilter
   name: StringFilter
   email: StringFilter
+  role: RoleManyRelationFilter
   password: PasswordFilter
+  groupParticipants: GroupManyRelationFilter
+  groupLeaders: GroupManyRelationFilter
   passwordResetToken: PasswordFilter
   passwordResetIssuedAt: DateTimeNullableFilter
   passwordResetRedeemedAt: DateTimeNullableFilter
@@ -87,8 +111,20 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
+input RoleManyRelationFilter {
+  every: RoleWhereInput
+  some: RoleWhereInput
+  none: RoleWhereInput
+}
+
 input PasswordFilter {
   isSet: Boolean!
+}
+
+input GroupManyRelationFilter {
+  every: GroupWhereInput
+  some: GroupWhereInput
+  none: GroupWhereInput
 }
 
 input DateTimeNullableFilter {
@@ -120,13 +156,30 @@ enum OrderDirection {
 input UserUpdateInput {
   name: String
   email: String
+  role: RoleRelateToManyForUpdateInput
   password: String
+  groupParticipants: GroupRelateToManyForUpdateInput
+  groupLeaders: GroupRelateToManyForUpdateInput
   passwordResetToken: String
   passwordResetIssuedAt: DateTime
   passwordResetRedeemedAt: DateTime
   magicAuthToken: String
   magicAuthIssuedAt: DateTime
   magicAuthRedeemedAt: DateTime
+}
+
+input RoleRelateToManyForUpdateInput {
+  disconnect: [RoleWhereUniqueInput!]
+  set: [RoleWhereUniqueInput!]
+  create: [RoleCreateInput!]
+  connect: [RoleWhereUniqueInput!]
+}
+
+input GroupRelateToManyForUpdateInput {
+  disconnect: [GroupWhereUniqueInput!]
+  set: [GroupWhereUniqueInput!]
+  create: [GroupCreateInput!]
+  connect: [GroupWhereUniqueInput!]
 }
 
 input UserUpdateArgs {
@@ -137,7 +190,10 @@ input UserUpdateArgs {
 input UserCreateInput {
   name: String
   email: String
+  role: RoleRelateToManyForCreateInput
   password: String
+  groupParticipants: GroupRelateToManyForCreateInput
+  groupLeaders: GroupRelateToManyForCreateInput
   passwordResetToken: String
   passwordResetIssuedAt: DateTime
   passwordResetRedeemedAt: DateTime
@@ -146,11 +202,21 @@ input UserCreateInput {
   magicAuthRedeemedAt: DateTime
 }
 
+input RoleRelateToManyForCreateInput {
+  create: [RoleCreateInput!]
+  connect: [RoleWhereUniqueInput!]
+}
+
+input GroupRelateToManyForCreateInput {
+  create: [GroupCreateInput!]
+  connect: [GroupWhereUniqueInput!]
+}
+
 type Product {
   id: ID!
   name: String
   description: String
-  photo: ProductImage
+  image: ProductImage
   status: String
   price: Int
 }
@@ -166,7 +232,7 @@ input ProductWhereInput {
   id: IDFilter
   name: StringFilter
   description: StringFilter
-  photo: ProductImageWhereInput
+  image: ProductImageWhereInput
   status: StringNullableFilter
   price: IntNullableFilter
 }
@@ -222,7 +288,7 @@ input ProductOrderByInput {
 input ProductUpdateInput {
   name: String
   description: String
-  photo: ProductImageRelateToOneForUpdateInput
+  image: ProductImageRelateToOneForUpdateInput
   status: String
   price: Int
 }
@@ -241,7 +307,7 @@ input ProductUpdateArgs {
 input ProductCreateInput {
   name: String
   description: String
-  photo: ProductImageRelateToOneForCreateInput
+  image: ProductImageRelateToOneForCreateInput
   status: String
   price: Int
 }
@@ -256,6 +322,7 @@ type ProductImage {
   image: CloudinaryImage_File
   altText: String
   product: Product
+  group: Group
 }
 
 type CloudinaryImage_File {
@@ -318,6 +385,7 @@ input ProductImageWhereInput {
   id: IDFilter
   altText: StringFilter
   product: ProductWhereInput
+  group: GroupWhereInput
 }
 
 input ProductImageOrderByInput {
@@ -329,6 +397,7 @@ input ProductImageUpdateInput {
   image: Upload
   altText: String
   product: ProductRelateToOneForUpdateInput
+  group: GroupRelateToOneForUpdateInput
 }
 
 """
@@ -342,6 +411,12 @@ input ProductRelateToOneForUpdateInput {
   disconnect: Boolean
 }
 
+input GroupRelateToOneForUpdateInput {
+  create: GroupCreateInput
+  connect: GroupWhereUniqueInput
+  disconnect: Boolean
+}
+
 input ProductImageUpdateArgs {
   where: ProductImageWhereUniqueInput!
   data: ProductImageUpdateInput!
@@ -351,11 +426,154 @@ input ProductImageCreateInput {
   image: Upload
   altText: String
   product: ProductRelateToOneForCreateInput
+  group: GroupRelateToOneForCreateInput
 }
 
 input ProductRelateToOneForCreateInput {
   create: ProductCreateInput
   connect: ProductWhereUniqueInput
+}
+
+input GroupRelateToOneForCreateInput {
+  create: GroupCreateInput
+  connect: GroupWhereUniqueInput
+}
+
+type Group {
+  id: ID!
+  name: String
+  description: String
+  price: Int
+  image: ProductImage
+  participants(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [User!]
+  participantsCount(where: UserWhereInput! = {}): Int
+  leaders(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [User!]
+  leadersCount(where: UserWhereInput! = {}): Int
+  participantLimit: Int
+}
+
+input GroupWhereUniqueInput {
+  id: ID
+}
+
+input GroupWhereInput {
+  AND: [GroupWhereInput!]
+  OR: [GroupWhereInput!]
+  NOT: [GroupWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  price: IntNullableFilter
+  image: ProductImageWhereInput
+  participants: UserManyRelationFilter
+  leaders: UserManyRelationFilter
+  participantLimit: IntNullableFilter
+}
+
+input UserManyRelationFilter {
+  every: UserWhereInput
+  some: UserWhereInput
+  none: UserWhereInput
+}
+
+input GroupOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  price: OrderDirection
+  participantLimit: OrderDirection
+}
+
+input GroupUpdateInput {
+  name: String
+  description: String
+  price: Int
+  image: ProductImageRelateToOneForUpdateInput
+  participants: UserRelateToManyForUpdateInput
+  leaders: UserRelateToManyForUpdateInput
+  participantLimit: Int
+}
+
+input UserRelateToManyForUpdateInput {
+  disconnect: [UserWhereUniqueInput!]
+  set: [UserWhereUniqueInput!]
+  create: [UserCreateInput!]
+  connect: [UserWhereUniqueInput!]
+}
+
+input GroupUpdateArgs {
+  where: GroupWhereUniqueInput!
+  data: GroupUpdateInput!
+}
+
+input GroupCreateInput {
+  name: String
+  description: String
+  price: Int
+  image: ProductImageRelateToOneForCreateInput
+  participants: UserRelateToManyForCreateInput
+  leaders: UserRelateToManyForCreateInput
+  participantLimit: Int
+}
+
+input UserRelateToManyForCreateInput {
+  create: [UserCreateInput!]
+  connect: [UserWhereUniqueInput!]
+}
+
+type Role {
+  id: ID!
+  name: String
+  users(
+    where: UserWhereInput! = {}
+    orderBy: [UserOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [User!]
+  usersCount(where: UserWhereInput! = {}): Int
+}
+
+input RoleWhereUniqueInput {
+  id: ID
+}
+
+input RoleWhereInput {
+  AND: [RoleWhereInput!]
+  OR: [RoleWhereInput!]
+  NOT: [RoleWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  users: UserManyRelationFilter
+}
+
+input RoleOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+}
+
+input RoleUpdateInput {
+  name: String
+  users: UserRelateToManyForUpdateInput
+}
+
+input RoleUpdateArgs {
+  where: RoleWhereUniqueInput!
+  data: RoleUpdateInput!
+}
+
+input RoleCreateInput {
+  name: String
+  users: UserRelateToManyForCreateInput
 }
 
 """
@@ -391,6 +609,18 @@ type Mutation {
   updateProductImages(data: [ProductImageUpdateArgs!]!): [ProductImage]
   deleteProductImage(where: ProductImageWhereUniqueInput!): ProductImage
   deleteProductImages(where: [ProductImageWhereUniqueInput!]!): [ProductImage]
+  createGroup(data: GroupCreateInput!): Group
+  createGroups(data: [GroupCreateInput!]!): [Group]
+  updateGroup(where: GroupWhereUniqueInput!, data: GroupUpdateInput!): Group
+  updateGroups(data: [GroupUpdateArgs!]!): [Group]
+  deleteGroup(where: GroupWhereUniqueInput!): Group
+  deleteGroups(where: [GroupWhereUniqueInput!]!): [Group]
+  createRole(data: RoleCreateInput!): Role
+  createRoles(data: [RoleCreateInput!]!): [Role]
+  updateRole(where: RoleWhereUniqueInput!, data: RoleUpdateInput!): Role
+  updateRoles(data: [RoleUpdateArgs!]!): [Role]
+  deleteRole(where: RoleWhereUniqueInput!): Role
+  deleteRoles(where: [RoleWhereUniqueInput!]!): [Role]
   endSession: Boolean!
   authenticateUserWithPassword(
     email: String!
@@ -487,6 +717,22 @@ type Query {
   ): [ProductImage!]
   productImage(where: ProductImageWhereUniqueInput!): ProductImage
   productImagesCount(where: ProductImageWhereInput! = {}): Int
+  groups(
+    where: GroupWhereInput! = {}
+    orderBy: [GroupOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Group!]
+  group(where: GroupWhereUniqueInput!): Group
+  groupsCount(where: GroupWhereInput! = {}): Int
+  roles(
+    where: RoleWhereInput! = {}
+    orderBy: [RoleOrderByInput!]! = []
+    take: Int
+    skip: Int! = 0
+  ): [Role!]
+  role(where: RoleWhereUniqueInput!): Role
+  rolesCount(where: RoleWhereInput! = {}): Int
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
   validateUserPasswordResetToken(
