@@ -5,13 +5,7 @@ type User {
   id: ID!
   name: String
   email: String
-  role(
-    where: RoleWhereInput! = {}
-    orderBy: [RoleOrderByInput!]! = []
-    take: Int
-    skip: Int! = 0
-  ): [Role!]
-  roleCount(where: RoleWhereInput! = {}): Int
+  role: Role
   password: PasswordState
   groupParticipants(
     where: GroupWhereInput! = {}
@@ -44,6 +38,7 @@ scalar DateTime
 
 input UserWhereUniqueInput {
   id: ID
+  name: String
   email: String
 }
 
@@ -54,7 +49,7 @@ input UserWhereInput {
   id: IDFilter
   name: StringFilter
   email: StringFilter
-  role: RoleManyRelationFilter
+  role: RoleWhereInput
   password: PasswordFilter
   groupParticipants: GroupManyRelationFilter
   groupLeaders: GroupManyRelationFilter
@@ -111,12 +106,6 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
-input RoleManyRelationFilter {
-  every: RoleWhereInput
-  some: RoleWhereInput
-  none: RoleWhereInput
-}
-
 input PasswordFilter {
   isSet: Boolean!
 }
@@ -156,7 +145,7 @@ enum OrderDirection {
 input UserUpdateInput {
   name: String
   email: String
-  role: RoleRelateToManyForUpdateInput
+  role: RoleRelateToOneForUpdateInput
   password: String
   groupParticipants: GroupRelateToManyForUpdateInput
   groupLeaders: GroupRelateToManyForUpdateInput
@@ -168,11 +157,10 @@ input UserUpdateInput {
   magicAuthRedeemedAt: DateTime
 }
 
-input RoleRelateToManyForUpdateInput {
-  disconnect: [RoleWhereUniqueInput!]
-  set: [RoleWhereUniqueInput!]
-  create: [RoleCreateInput!]
-  connect: [RoleWhereUniqueInput!]
+input RoleRelateToOneForUpdateInput {
+  create: RoleCreateInput
+  connect: RoleWhereUniqueInput
+  disconnect: Boolean
 }
 
 input GroupRelateToManyForUpdateInput {
@@ -190,7 +178,7 @@ input UserUpdateArgs {
 input UserCreateInput {
   name: String
   email: String
-  role: RoleRelateToManyForCreateInput
+  role: RoleRelateToOneForCreateInput
   password: String
   groupParticipants: GroupRelateToManyForCreateInput
   groupLeaders: GroupRelateToManyForCreateInput
@@ -202,9 +190,9 @@ input UserCreateInput {
   magicAuthRedeemedAt: DateTime
 }
 
-input RoleRelateToManyForCreateInput {
-  create: [RoleCreateInput!]
-  connect: [RoleWhereUniqueInput!]
+input RoleRelateToOneForCreateInput {
+  create: RoleCreateInput
+  connect: RoleWhereUniqueInput
 }
 
 input GroupRelateToManyForCreateInput {
@@ -534,6 +522,10 @@ input UserRelateToManyForCreateInput {
 type Role {
   id: ID!
   name: String
+  canManageProducts: Boolean
+  canSeeOtherUsers: Boolean
+  canManageUsers: Boolean
+  canManageRoles: Boolean
   users(
     where: UserWhereInput! = {}
     orderBy: [UserOrderByInput!]! = []
@@ -553,16 +545,33 @@ input RoleWhereInput {
   NOT: [RoleWhereInput!]
   id: IDFilter
   name: StringFilter
+  canManageProducts: BooleanFilter
+  canSeeOtherUsers: BooleanFilter
+  canManageUsers: BooleanFilter
+  canManageRoles: BooleanFilter
   users: UserManyRelationFilter
+}
+
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
 }
 
 input RoleOrderByInput {
   id: OrderDirection
   name: OrderDirection
+  canManageProducts: OrderDirection
+  canSeeOtherUsers: OrderDirection
+  canManageUsers: OrderDirection
+  canManageRoles: OrderDirection
 }
 
 input RoleUpdateInput {
   name: String
+  canManageProducts: Boolean
+  canSeeOtherUsers: Boolean
+  canManageUsers: Boolean
+  canManageRoles: Boolean
   users: UserRelateToManyForUpdateInput
 }
 
@@ -573,6 +582,10 @@ input RoleUpdateArgs {
 
 input RoleCreateInput {
   name: String
+  canManageProducts: Boolean
+  canSeeOtherUsers: Boolean
+  canManageUsers: Boolean
+  canManageRoles: Boolean
   users: UserRelateToManyForCreateInput
 }
 
@@ -623,21 +636,21 @@ type Mutation {
   deleteRoles(where: [RoleWhereUniqueInput!]!): [Role]
   endSession: Boolean!
   authenticateUserWithPassword(
-    email: String!
+    name: String!
     password: String!
   ): UserAuthenticationWithPasswordResult
   createInitialUser(
     data: CreateInitialUserInput!
   ): UserAuthenticationWithPasswordSuccess!
-  sendUserPasswordResetLink(email: String!): Boolean!
+  sendUserPasswordResetLink(name: String!): Boolean!
   redeemUserPasswordResetToken(
-    email: String!
+    name: String!
     token: String!
     password: String!
   ): RedeemUserPasswordResetTokenResult
-  sendUserMagicAuthLink(email: String!): Boolean!
+  sendUserMagicAuthLink(name: String!): Boolean!
   redeemUserMagicAuthToken(
-    email: String!
+    name: String!
     token: String!
   ): RedeemUserMagicAuthTokenResult!
 }
@@ -736,7 +749,7 @@ type Query {
   keystone: KeystoneMeta!
   authenticatedItem: AuthenticatedItem
   validateUserPasswordResetToken(
-    email: String!
+    name: String!
     token: String!
   ): ValidateUserPasswordResetTokenResult
 }

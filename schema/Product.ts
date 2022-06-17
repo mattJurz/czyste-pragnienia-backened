@@ -1,8 +1,14 @@
 import { list } from "@keystone-6/core";
 import { integer, relationship, select, text } from "@keystone-6/core/fields";
+import { rules, isSignedIn } from "../access";
 
 export const Product = list({
-  // TODO access:
+  access: {
+    create: isSignedIn,
+    read: rules.canReadProducts,
+    update: rules.canManageProducts,
+    delete: rules.canManageProducts,
+  },
   fields: {
     name: text({ validation: { isRequired: true } }),
     description: text({ ui: { displayMode: "textarea" } }),

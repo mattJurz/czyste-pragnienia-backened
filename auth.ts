@@ -1,5 +1,6 @@
 import { createAuth } from "@keystone-6/auth";
 import { statelessSessions } from "@keystone-6/core/session";
+import { permissionsList } from "./schema/fields";
 
 const sessionSecret =
   process.env.SESSION_SECERT ||
@@ -14,10 +15,10 @@ const session = statelessSessions({
 
 const { withAuth } = createAuth({
   listKey: "User",
-  identityField: "email",
+  identityField: "name",
   secretField: "password",
   // Additional options
-  sessionData: "id name email",
+  sessionData: `id name email role { ${permissionsList.join(' ')} }`,
   initFirstItem: {
     fields: ["name", "email", "password"],
     //TODO: Add in initial roles here

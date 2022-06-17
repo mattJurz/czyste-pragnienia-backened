@@ -13,9 +13,10 @@ generator client {
 
 model User {
   id                      String    @id @default(cuid())
-  name                    String    @default("")
+  name                    String    @unique @default("")
   email                   String    @unique @default("")
-  role                    Role[]    @relation("Role_users")
+  role                    Role?     @relation("User_role", fields: [roleId], references: [id])
+  roleId                  String?   @map("role")
   password                String?
   groupParticipants       Group[]   @relation("Group_participants")
   groupLeaders            Group[]   @relation("Group_leaders")
@@ -25,6 +26,8 @@ model User {
   magicAuthToken          String?
   magicAuthIssuedAt       DateTime?
   magicAuthRedeemedAt     DateTime?
+
+  @@index([roleId])
 }
 
 model Product {
@@ -58,7 +61,11 @@ model Group {
 }
 
 model Role {
-  id    String @id @default(cuid())
-  name  String @default("")
-  users User[] @relation("Role_users")
+  id                String  @id @default(cuid())
+  name              String  @default("")
+  canManageProducts Boolean @default(false)
+  canSeeOtherUsers  Boolean @default(false)
+  canManageUsers    Boolean @default(false)
+  canManageRoles    Boolean @default(false)
+  users             User[]  @relation("User_role")
 }
