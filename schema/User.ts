@@ -6,32 +6,33 @@ import {
   select,
   text,
 } from "@keystone-6/core/fields";
+import { permissions, rules } from '../access';
 
 export const User = list({
-  // access:
-  // ui:
+  access: {
+    create: () => true,
+    read: rules.canManageUsers,
+    update: rules.canManageUsers,
+    // only people with the permission can delete themselves!
+    // You can't delete yourself
+    delete: permissions.canManageUsers,
+  },
+  ui: {
+    // hide the backend UI from regular users
+    hideCreate: (args) => !permissions.canManageUsers(args),
+    hideDelete: (args) => !permissions.canManageUsers(args),
+  },
   fields: {
-    name: text({ validation: { isRequired: true } }),
+    name: text({
+      validation: { isRequired: true }, 
+      isIndexed: "unique",
+    }),
     email: text({
       validation: { isRequired: true },
       isIndexed: "unique",
     }),
-    // role: select({
-    //   options: [
-    //     { label: "client", value: "CLIENT" },
-    //     { label: "participant", value: "PARTICIPANT" },
-    //     { label: "group leader", value: "GROUP_LEADER" },
-    //     { label: "admin", value: "ADMIN" },
-    //     { label: "super admin", value: "SUPER_ADMIN" },
-    //   ],
-    //   defaultValue: "CLIENT",
-    //   ui: {
-    //     displayMode: "segmented-control",
-    //   },
-    // }),
     role: relationship({
       ref: "Role.users",
-      many: true,
     }),
     password: password(),
     groupParticipants: relationship({ ref: "Group.participants", many: true }),
@@ -39,24 +40,6 @@ export const User = list({
       ref: "Group.leaders",
       many: true,
     }),
-    //TODO, add roles, cart and orders
-    // role: relationship({ ref: "Role.users" }),
-    // authoredPosts: relationship({ ref: "Post.author", many: true }),
-    // pollAnswers: relationship({
-    //   ref: "PollAnswer.answeredByUsers",
-    //   many: true,
-    //   ui: {
-    //     hideCreate: true,
-    //     createView: { fieldMode: "hidden" },
-    //   },
-    // }),
+
   },
 });
-// export const Role = list({
-//   fields: {
-//     name: text(),
-//     canManageContent: checkbox({ defaultValue: false }),
-//     canManageUsers: checkbox({ defaultValue: false }),
-//     users: relationship({ ref: "User.role", many: true }),
-//   },
-// });
